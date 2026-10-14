@@ -96,8 +96,3 @@ kubectl apply -f k8s/deployment.yaml
 4. Render detects `render.yaml` automatically, builds the application, runs tests, and provides you with a free live URL:
    `https://daily-italy-app.onrender.com`
 
----
-
-## 👥 Demo Accounts
-* **Admin Account (RBAC):** Username `admin`, Password `admin123`
-* **Demo Friend Accounts:** `giulia_roma`, `marco_milano`, `sofia_firenze`
