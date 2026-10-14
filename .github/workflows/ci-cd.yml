@@ -1,0 +1,83 @@
+name: Daily-Italy CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  # ==============================================================================
+  # 1. Automated Test Suite & Code Quality
+  # ==============================================================================
+  test:
+    name: Automated Tests (Pytest)
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.10"
+        cache: "pip"
+
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest httpx
+
+    - name: Seed Database
+      run: |
+        python -m backend.scripts.seed_curriculum
+
+    - name: Run Pytest Test Suite
+      run: |
+        python -m pytest backend/tests/ -v
+
+  # ==============================================================================
+  # 2. Container Build & Smoke Verification
+  # ==============================================================================
+  docker:
+    name: Docker Multi-Stage Build & Smoke Test
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build Docker Image
+      run: |
+        docker build -t daily-italy:latest .
+
+    - name: Smoke Test Container
+      run: |
+        docker run -d --name test-container -p 8000:8000 daily-italy:latest
+        sleep 5
+        curl -f http://localhost:8000/api/health || exit 1
+        docker stop test-container
+
+  # ==============================================================================
+  # 3. Automated Zero-Downtime Deployment
+  # ==============================================================================
+  deploy:
+    name: Continuous Deployment to Cloud (Render)
+    needs: [test, docker]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Trigger Render Deploy Hook
+      if: env.RENDER_DEPLOY_HOOK != ''
+      env:
+        RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+      run: |
+        echo "Triggering automated cloud deployment on Render.com..."
+        curl -X POST "$RENDER_DEPLOY_HOOK"

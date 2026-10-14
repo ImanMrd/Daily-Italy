@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  italian-vocab-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: parole-3000-app
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - SECRET_KEY=parole3000-dev-secret-key-replace-in-production
+      - DATABASE_URL=sqlite:///./backend/data/italian_vocab.db
+    volumes:
+      # Persistent storage for user profiles and progress
+      - ./backend/data:/app/backend/data

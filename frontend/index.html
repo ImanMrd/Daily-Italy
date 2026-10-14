@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily-Italy — L'Italiano Quotidiano</title>
+  
+  <!-- Typography: Lora for comfortable Italian editorial reading, Plus Jakarta Sans for UI -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#fbf9f5">
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header class="navbar">
+    <div class="nav-container">
+      
+      <!-- Left: Brand & Gamification Stats -->
+      <div class="nav-left">
+        <a class="brand" onclick="window.app.switchView('home')" title="Daily-Italy Home">
+          <div class="brand-crest">DI</div>
+          <div class="brand-text">
+            <div class="brand-title">DAILY-ITALY</div>
+            <div class="brand-subtitle">Italian Language</div>
+          </div>
+        </a>
+
+        <!-- Gamification Stats Pill Bar -->
+        <div class="stats-bar">
+          <div class="stat-pill" title="Daily Streak (Days Active)">
+            <span class="stat-icon">🔥</span>
+            <span class="stat-streak" id="user-streak-val">1</span>
+          </div>
+          <div class="stat-pill" title="Experience Points (XP)">
+            <span class="stat-icon">⭐</span>
+            <span class="stat-xp" id="user-xp-val">0</span>
+          </div>
+          <div class="stat-pill" title="Energy / Hearts">
+            <span class="stat-icon">❤️</span>
+            <span class="stat-hearts" id="user-hearts-val">5</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Center: Main Navigation Tabs with Carousel Control Arrows -->
+      <div class="nav-tabs-wrapper">
+        <button 
+          class="nav-scroll-arrow nav-scroll-left" 
+          id="nav-scroll-left-btn" 
+          onclick="window.app.scrollNav(-200)" 
+          title="Scroll navigation tabs left" 
+          aria-label="Scroll left"
+        >
+          ‹
+        </button>
+
+        <nav class="nav-tabs" id="main-nav-tabs">
+          <button class="nav-btn active" data-view="home">
+            🏠 Home
+          </button>
+          <button class="nav-btn" data-view="roadmap">
+            🗺️ Chapters
+          </button>
+          <button class="nav-btn" data-view="grammar">
+            📖 Grammar
+          </button>
+          <button class="nav-btn" data-view="reading">
+            📚 Readings
+          </button>
+          <button class="nav-btn" data-view="writing">
+            ✍️ Writing
+          </button>
+          <button class="nav-btn" data-view="review">
+            🧠 Smart Review
+          </button>
+          <button class="nav-btn" data-view="leaderboard">
+            🏆 Leaderboard
+          </button>
+          <button class="nav-btn admin-nav-btn" data-view="admin" id="admin-nav-tab" style="display: none;">
+            🛡️ Admin
+          </button>
+        </nav>
+
+        <button 
+          class="nav-scroll-arrow nav-scroll-right" 
+          id="nav-scroll-right-btn" 
+          onclick="window.app.scrollNav(200)" 
+          title="Scroll navigation tabs right" 
+          aria-label="Scroll right"
+        >
+          ›
+        </button>
+      </div>
+
+      <!-- Right: Action & Profile Buttons (Always Visible) -->
+      <div class="nav-actions">
+        <button class="btn-secondary nav-action-btn" onclick="window.app.openAddWordModal()" title="Add a custom word to your vault">
+          ➕ Add Word
+        </button>
+        <button class="user-profile-btn" onclick="window.app.handleProfileClick()" title="User Account">
+          <span class="profile-avatar-circle">👤</span>
+          <span id="profile-btn-text">Log In</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Main View Container -->
+  <main class="main-content container">
+    <section id="view-home" class="view-section active"></section>
+    <section id="view-roadmap" class="view-section"></section>
+    <section id="view-flashcards" class="view-section"></section>
+    <section id="view-quiz" class="view-section"></section>
+    <section id="view-grammar" class="view-section"></section>
+    <section id="view-reading" class="view-section"></section>
+    <section id="view-writing" class="view-section"></section>
+    <section id="view-review" class="view-section"></section>
+    <section id="view-leaderboard" class="view-section"></section>
+    <section id="view-admin" class="view-section"></section>
+  </main>
+
+  <!-- Confetti Canvas for Celebrations -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- Auth Modal (Login / Register) -->
+  <div class="modal-backdrop" id="auth-modal" data-mode="login">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="auth-modal-title">Log In to Your Account</h3>
+        <button class="close-modal-btn" onclick="window.app.closeModal('auth-modal')">&times;</button>
+      </div>
+
+      <div id="auth-error-msg" style="display: none; background: #fee2e2; border: 1px solid #ef4444; color: #991b1b; padding: 10px; border-radius: var(--radius-sm); font-size: 0.85rem; margin-bottom: 14px;"></div>
+
+      <form onsubmit="window.app.handleAuthSubmit(event)">
+        <div class="form-group">
+          <label for="auth-username">Username</label>
+          <input type="text" id="auth-username" class="form-control" placeholder="Choose a unique username" required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label for="auth-password">Password</label>
+          <input type="password" id="auth-password" class="form-control" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn-tactile" style="width: 100%; justify-content: center; padding: 12px; margin-top: 8px;" id="auth-submit-btn">
+          Log In
+        </button>
+      </form>
+
+      <div style="margin-top: 18px; text-align: center; font-size: 0.85rem; color: var(--text-secondary);" id="auth-toggle-prompt">
+        Don't have an account? <a href="#" onclick="window.app.openAuthModal(true)" style="color: var(--terracotta); text-decoration: none; font-weight: 700;">Sign up now</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Placement Test Modal -->
+  <div class="modal-backdrop" id="placement-modal">
+    <div class="modal-card" style="max-width: 680px; max-height: 90vh; overflow-y: auto;">
+      <div class="modal-header">
+        <h3 id="placement-modal-title">Level Placement Test</h3>
+        <button class="close-modal-btn" onclick="window.app.closeModal('placement-modal')">&times;</button>
+      </div>
+      <div id="placement-modal-body">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Custom Word Modal -->
+  <div class="modal-backdrop" id="add-word-modal">
+    <div class="modal-card" style="max-width: 520px;">
+      <div class="modal-header">
+        <h3>➕ Add Custom Word</h3>
+        <button class="close-modal-btn" onclick="window.app.closeModal('add-word-modal')">&times;</button>
+      </div>
+
+      <div id="word-error-msg" style="display: none; background: #fee2e2; border: 1px solid #ef4444; color: #991b1b; padding: 10px; border-radius: var(--radius-sm); font-size: 0.85rem; margin-bottom: 14px;"></div>
+
+      <form onsubmit="window.app.handleAddWordSubmit(event)">
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label for="word-italian">Italian Word *</label>
+            <input type="text" id="word-italian" class="form-control" placeholder="e.g. tramonto" required>
+          </div>
+          <div class="form-group">
+            <label for="word-type">Part of Speech</label>
+            <select id="word-type" class="form-control">
+              <option value="Nm">Nm (Masculine Noun)</option>
+              <option value="Nf">Nf (Feminine Noun)</option>
+              <option value="Va">Va (Active Verb)</option>
+              <option value="Vr">Vr (Reflexive Verb)</option>
+              <option value="Agg">Agg (Adjective)</option>
+              <option value="Avv">Avv (Adverb)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="word-english">English Translation *</label>
+          <input type="text" id="word-english" class="form-control" placeholder="e.g. sunset" required>
+        </div>
+
+        <div class="form-group">
+          <label for="word-pronunciation">Pronunciation Guide (Optional)</label>
+          <input type="text" id="word-pronunciation" class="form-control" placeholder="e.g. trah-MOHN-toh">
+        </div>
+
+        <div class="form-group">
+          <label for="word-example-it">Example Sentence (Italian)</label>
+          <input type="text" id="word-example-it" class="form-control" placeholder="e.g. Il tramonto a Firenze è spettacolare.">
+        </div>
+
+        <div class="form-group">
+          <label for="word-example-en">Example Sentence (English)</label>
+          <input type="text" id="word-example-en" class="form-control" placeholder="e.g. The sunset in Florence is spectacular.">
+        </div>
+
+        <div class="form-group">
+          <label for="word-related">Related / Derived Words</label>
+          <input type="text" id="word-related" class="form-control" placeholder="e.g. tramontare (Va)">
+        </div>
+
+        <button type="submit" class="btn-tactile" style="width: 100%; justify-content: center; padding: 12px; margin-top: 10px;">
+          Save Word to Vault
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/static/js/audio.js"></script>
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/views/home.js"></script>
+  <script src="/static/js/views/roadmap.js"></script>
+  <script src="/static/js/views/flashcards.js"></script>
+  <script src="/static/js/views/quiz.js"></script>
+  <script src="/static/js/views/grammar.js"></script>
+  <script src="/static/js/views/reading.js"></script>
+  <script src="/static/js/views/writing.js"></script>
+  <script src="/static/js/views/review.js"></script>
+  <script src="/static/js/views/leaderboard.js"></script>
+  <script src="/static/js/views/admin.js"></script>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: parole3000-deployment
+  labels:
+    app: parole3000
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: parole3000
+  template:
+    metadata:
+      labels:
+        app: parole3000
+    spec:
+      containers:
+      - name: parole3000
+        image: parole3000:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+          name: http
+        envFrom:
+        - configMapRef:
+            name: parole3000-config
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        volumeMounts:
+        - name: data-volume
+          mountPath: /app/backend/data
+      volumes:
+      - name: data-volume
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: parole3000-service
+  labels:
+    app: parole3000
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 8000
+    protocol: TCP
+    name: http
+  selector:
+    app: parole3000
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: parole3000-config
+data:
+  PORT: "8000"
+  SECRET_KEY: "parole3000-k8s-secret-key-change-me"
+  DATABASE_URL: "sqlite:///./backend/data/italian_vocab.db"

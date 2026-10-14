@@ -1,0 +1,3 @@
+# Optional dependencies for running offline PDF OCR extraction scripts
+pymupdf>=1.24.0
+rapidocr-onnxruntime>=1.3.0
