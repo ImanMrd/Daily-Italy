@@ -1,8 +1,51 @@
 # 🇮🇹 Daily-Italy — L'Italiano Quotidiano
 
+<div align="center">
+
+![FastAPI](https://img.shields.io/badge/Backend-FastAPI%20%2B%20SQLAlchemy-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![Docker](https://img.shields.io/badge/Container-Multi--Stage%20Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Kubernetes](https://img.shields.io/badge/Orchestration-Kubernetes%20(k8s)-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white)
+![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions%20%2B%20Pytest-2088FF?style=for-the-badge&logo=githubactions&logoColor=white)
+
+</div>
+
 An artisanal, interactive Italian vocabulary mastery application built upon the acclaimed book ***"Le prime 3000 parole"*** (Alma Edizioni).
 
 Designed with a luminous Mediterranean visual identity, multi-page routing, open course exploration (no mandatory login wall), 15-word milestone units, interactive 3D flashcards with native speech synthesis, contextual exercise quizzes, **Busuu-style Spaced Repetition (SRS) Smart Review**, friend leaderboards, and an **RBAC Admin Panel**.
+
+---
+
+## 🏛️ Cloud-Native & Full-Stack Architecture
+
+```mermaid
+flowchart LR
+    subgraph Client["🌐 Frontend SPA"]
+        UI["Multimodal Learning UI<br/>(Vocab, Grammar, Reading, Writing Labs)"]
+        Audio["Web Speech & Audio API"]
+    end
+
+    subgraph Backend["⚡ FastAPI Service Layer"]
+        Router["Async REST Endpoints<br/>(/courses, /study, /quiz, /review)"]
+        Auth["JWT Auth & RBAC Guard<br/>(User vs. Admin)"]
+        SRS["SuperMemo-2 (SM-2)<br/>Spaced Repetition Engine"]
+    end
+
+    subgraph Data["🗄️ Persistence"]
+        DB[("SQLite / PostgreSQL<br/>60-Chapter CEFR Curriculum")]
+    end
+
+    subgraph DevOps["🚀 CI/CD & Orchestration"]
+        GHA["GitHub Actions<br/>(Pytest Suite + Docker Build)"]
+        K8S["Kubernetes Cluster (k8s/)<br/>& Render Cloud Blueprint"]
+    end
+
+    UI --> Router
+    Router --> Auth
+    Router --> SRS
+    SRS --> DB
+    GHA --> K8S
+    K8S -.->|Deploys Container| Backend
+```
 
 ---
 
@@ -95,4 +138,3 @@ kubectl apply -f k8s/deployment.yaml
 3. Click **New +** $\rightarrow$ **Blueprint** and select your GitHub repository.
 4. Render detects `render.yaml` automatically, builds the application, runs tests, and provides you with a free live URL:
    `https://daily-italy-app.onrender.com`
-
